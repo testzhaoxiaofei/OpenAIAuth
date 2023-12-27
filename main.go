@@ -1,11 +1,10 @@
 package main
 
 import (
+	"OpenAIAuth/auth"
 	"encoding/json"
 	"fmt"
 	"os"
-
-	"github.com/xqdoo00o/OpenAIAuth/auth"
 )
 
 func main() {

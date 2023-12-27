@@ -14,7 +14,7 @@ import (
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
 
-	arkose "github.com/xqdoo00o/funcaptcha"
+	arkose "github.com/testzhaoxiaofei/funcaptcha"
 )
 
 type Error struct {
