@@ -1,4 +1,4 @@
-module github.com/xqdoo00o/OpenAIAuth
+module github.com/testzhaoxiaofei/OpenAIAuth
 
 go 1.20
 
@@ -6,7 +6,6 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/bogdanfinn/fhttp v0.5.24
 	github.com/bogdanfinn/tls-client v1.6.1
-	github.com/xqdoo00o/funcaptcha v0.0.0-20231116083157-e2a60817e1e4
 )
 
 require (
