@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"strings"
@@ -13,8 +14,6 @@ import (
 	http "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
-
-	arkose "github.com/testzhaoxiaofei/funcaptcha"
 )
 
 type Error struct {
@@ -109,6 +108,19 @@ func (userLogin *UserLogin) GetAuthorizedUrl(csrfToken string) (string, int, err
 	req, err := http.NewRequest(http.MethodPost, promptLoginUrl, strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", ContentType)
 	req.Header.Set("User-Agent", UserAgent)
+	req.Header.Set("Referer", "https://chat.openai.com/g/")
+	//"Referer":        "https://chat.openai.com/g/" + gizmoId,
+	req.Header.Set("Accept-Language", "en-US")
+	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
+	req.Header.Set("Pragma", "no-cache")
+	req.Header.Set("Sec-Ch-Ua", `"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"`)
+	req.Header.Set("Sec-Ch-Ua-Mobile", "?0")
+
+	req.Header.Set("Sec-Ch-Ua-Platform", "macOS")
+	req.Header.Set("Sec-Fetch-Dest", "empty")
+	req.Header.Set("same-origin", "same-origin")
+	req.Header.Set("Sec-Fetch-Mode", "cors")
+
 	resp, err := userLogin.client.Do(req)
 	if err != nil {
 		return "", http.StatusInternalServerError, err
@@ -129,6 +141,18 @@ func (userLogin *UserLogin) GetState(authorizedUrl string) (string, int, error) 
 	req, err := http.NewRequest(http.MethodGet, authorizedUrl, nil)
 	req.Header.Set("Content-Type", ContentType)
 	req.Header.Set("User-Agent", UserAgent)
+	req.Header.Set("Referer", "https://chat.openai.com/g/")
+	//"Referer":        "https://chat.openai.com/g/" + gizmoId,
+	req.Header.Set("Accept-Language", "en-US")
+	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
+	req.Header.Set("Pragma", "no-cache")
+	req.Header.Set("Sec-Ch-Ua", `"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"`)
+	req.Header.Set("Sec-Ch-Ua-Mobile", "?0")
+
+	req.Header.Set("Sec-Ch-Ua-Platform", "macOS")
+	req.Header.Set("Sec-Fetch-Dest", "empty")
+	req.Header.Set("same-origin", "same-origin")
+	req.Header.Set("Sec-Fetch-Mode", "cors")
 	resp, err := userLogin.client.Do(req)
 	if err != nil {
 		return "", http.StatusInternalServerError, err
@@ -158,6 +182,18 @@ func (userLogin *UserLogin) CheckUsername(state string, username string) (int, e
 	req, _ := http.NewRequest(http.MethodPost, LoginUsernameUrl+state, strings.NewReader(formParams.Encode()))
 	req.Header.Set("Content-Type", ContentType)
 	req.Header.Set("User-Agent", UserAgent)
+	req.Header.Set("Referer", "https://chat.openai.com/g/")
+	//"Referer":        "https://chat.openai.com/g/" + gizmoId,
+	req.Header.Set("Accept-Language", "en-US")
+	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
+	req.Header.Set("Pragma", "no-cache")
+	req.Header.Set("Sec-Ch-Ua", `"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"`)
+	req.Header.Set("Sec-Ch-Ua-Mobile", "?0")
+
+	req.Header.Set("Sec-Ch-Ua-Platform", "macOS")
+	req.Header.Set("Sec-Fetch-Dest", "empty")
+	req.Header.Set("same-origin", "same-origin")
+	req.Header.Set("Sec-Fetch-Mode", "cors")
 	resp, err := userLogin.client.Do(req)
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -171,17 +207,17 @@ func (userLogin *UserLogin) CheckUsername(state string, username string) (int, e
 	return http.StatusOK, nil
 }
 
-func (userLogin *UserLogin) setArkose() (int, error) {
-	token, err := arkose.GetOpenAIAuthToken("", userLogin.client.GetProxy())
-	if err == nil {
-		u, _ := url.Parse("https://openai.com")
-		cookies := []*http.Cookie{}
-		userLogin.client.GetCookieJar().SetCookies(u, append(cookies, &http.Cookie{Name: "arkoseToken", Value: token}))
-		return http.StatusOK, nil
-	} else {
-		println("Error getting auth Arkose token")
-		return http.StatusInternalServerError, err
-	}
+func (userLogin *UserLogin) setArkose(token string) (int, error) {
+	//token, err := arkose.GetOpenAIAuthToken("", userLogin.client.GetProxy())
+	//if err == nil {
+	u, _ := url.Parse("https://openai.com")
+	cookies := []*http.Cookie{}
+	userLogin.client.GetCookieJar().SetCookies(u, append(cookies, &http.Cookie{Name: "arkoseToken", Value: token}))
+	return http.StatusOK, nil
+	//} else {
+	//	println("Error getting auth Arkose token")
+	//	return http.StatusInternalServerError, err
+	//}
 }
 
 //goland:noinspection GoUnhandledErrorResult,GoErrorStringFormat
@@ -195,7 +231,8 @@ func (userLogin *UserLogin) CheckPassword(state string, username string, passwor
 	req, err := http.NewRequest(http.MethodPost, LoginPasswordUrl+state, strings.NewReader(formParams.Encode()))
 	req.Header.Set("Content-Type", ContentType)
 	req.Header.Set("User-Agent", UserAgent)
-	userLogin.client.SetFollowRedirect(false)
+
+	userLogin.client.SetFollowRedirect(true)
 	resp, err := userLogin.client.Do(req)
 	if err != nil {
 		return "", http.StatusInternalServerError, err
@@ -299,6 +336,19 @@ func (userLogin *UserLogin) GetToken() (int, string, string) {
 	// get csrf token
 	req, _ := http.NewRequest(http.MethodGet, csrfUrl, nil)
 	req.Header.Set("User-Agent", UserAgent)
+	req.Header.Set("Referer", "https://chat.openai.com/g/")
+	//"Referer":        "https://chat.openai.com/g/" + gizmoId,
+	req.Header.Set("Accept-Language", "en-US")
+	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
+	req.Header.Set("Pragma", "no-cache")
+	req.Header.Set("Sec-Ch-Ua", `"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"`)
+	req.Header.Set("Sec-Ch-Ua-Mobile", "?0")
+
+	req.Header.Set("Sec-Ch-Ua-Platform", "macOS")
+	req.Header.Set("Sec-Fetch-Dest", "empty")
+	req.Header.Set("same-origin", "same-origin")
+	req.Header.Set("Sec-Fetch-Mode", "cors")
+
 	resp, err := userLogin.client.Do(req)
 	if err != nil {
 		return http.StatusInternalServerError, err.Error(), ""
@@ -337,12 +387,13 @@ func (userLogin *UserLogin) GetToken() (int, string, string) {
 		return statusCode, err.Error(), ""
 	}
 
+	token, err := GetArkoseToken("http://198.98.48.76:9999/token?authkey=chat88")
+	fmt.Println("tokennnnnnnnnnnnnn", token, err)
 	// set arkose captcha
-	statusCode, err = userLogin.setArkose()
+	statusCode, err = userLogin.setArkose(token)
 	if err != nil {
 		return statusCode, err.Error(), ""
 	}
-
 	// check password
 	_, statusCode, err = userLogin.CheckPassword(state, userLogin.Username, userLogin.Password)
 	if err != nil {
@@ -451,4 +502,40 @@ func (userLogin *UserLogin) RenewWithCookies() *Error {
 
 func (userLogin *UserLogin) GetAuthResult() Result {
 	return userLogin.Result
+}
+
+type ArkoseToken struct {
+	Code    int
+	Created int64
+	Msg     string
+	Token   string
+}
+
+func GetArkoseToken(url string) (string, error) {
+	var arkoseToken ArkoseToken
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	client := &http.Client{}
+	// 发送请求并获取响应
+	resp, err := client.Do(req)
+
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	//body, err := io.ReadAll(resp.Body)
+
+	err = json.Unmarshal(body, &arkoseToken)
+
+	if err != nil {
+		return "", err
+	}
+
+	if arkoseToken.Code != 1 {
+		return "", errors.New("token 异常")
+	}
+
+	return arkoseToken.Token, err
 }
