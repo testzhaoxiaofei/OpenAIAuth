@@ -1,14 +1,13 @@
 package main
 
 import (
-	"OpenAIAuth/auth"
 	"encoding/json"
 	"fmt"
-	"os"
+	"github.com/testzhaoxiaofei/OpenAIAuth/auth"
 )
 
 func main() {
-	auth := auth.NewAuthenticator(os.Getenv("OPENAI_EMAIL"), os.Getenv("OPENAI_PASSWORD"), os.Getenv("PROXY"))
+	auth := auth.NewAuthenticator("hbwtpvauny18@outlook.com", "vctkbxnozi59", "")
 	err := auth.Begin()
 	if err != nil {
 		println("Error: " + err.Details)
@@ -17,14 +16,14 @@ func main() {
 		return
 	}
 	// if os.Getenv("PROXY") != "" {
-	_, err = auth.GetPUID()
-	if err != nil {
-		println("Error: " + err.Details)
-		println("Location: " + err.Location)
-		println("Status code: " + fmt.Sprint(err.StatusCode))
-		return
-	}
-	// }
+	//_, err = auth.GetPUID()
+	//if err != nil {
+	//	println("Error: " + err.Details)
+	//	println("Location: " + err.Location)
+	//	println("Status code: " + fmt.Sprint(err.StatusCode))
+	//	return
+	//}
+	//// }
 	// JSON encode auth.GetAuthResult()
 	result := auth.GetAuthResult()
 	result_json, _ := json.Marshal(result)

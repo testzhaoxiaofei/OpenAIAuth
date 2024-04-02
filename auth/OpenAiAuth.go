@@ -320,11 +320,12 @@ func (userLogin *UserLogin) GetAccessTokenInternal(code string) (string, int, er
 		result_string := fmt.Sprintf("%v", result)
 		return result_string, 0, errors.New("missing access token")
 	}
+	fmt.Println("最终结果", result)
 	return result["accessToken"].(string), http.StatusOK, nil
 }
 
-func (userLogin *UserLogin) Begin() *Error {
-	_, err, token := userLogin.GetToken()
+func (userLogin *UserLogin) Begin(artoken string) *Error {
+	_, err, token := userLogin.GetToken(artoken)
 	if err != "" {
 		return NewError("begin", 0, err)
 	}
@@ -332,7 +333,7 @@ func (userLogin *UserLogin) Begin() *Error {
 	return nil
 }
 
-func (userLogin *UserLogin) GetToken() (int, string, string) {
+func (userLogin *UserLogin) GetToken(arkoen string) (int, string, string) {
 	// get csrf token
 	req, _ := http.NewRequest(http.MethodGet, csrfUrl, nil)
 	req.Header.Set("User-Agent", UserAgent)
@@ -387,7 +388,7 @@ func (userLogin *UserLogin) GetToken() (int, string, string) {
 		return statusCode, err.Error(), ""
 	}
 
-	token, err := GetArkoseToken("http://198.98.48.76:9999/token?authkey=chat88")
+	token, err := GetArkoseToken("http://198.98.48.76:9999/token?authkey=chat88", arkoen)
 	fmt.Println("tokennnnnnnnnnnnnn", token, err)
 	// set arkose captcha
 	statusCode, err = userLogin.setArkose(token)
@@ -511,9 +512,10 @@ type ArkoseToken struct {
 	Token   string
 }
 
-func GetArkoseToken(url string) (string, error) {
+func GetArkoseToken(url, arkoen string) (string, error) {
 	var arkoseToken ArkoseToken
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	req.Header.Add("Authorization", arkoen)
 	client := &http.Client{}
 	// 发送请求并获取响应
 	resp, err := client.Do(req)
