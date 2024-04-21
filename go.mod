@@ -6,7 +6,6 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/bogdanfinn/fhttp v0.5.27
 	github.com/bogdanfinn/tls-client v1.7.2
-	github.com/testzhaoxiaofei/funcaptcha v0.0.0-20231227033854-5d79b5b1d278
 )
 
 require (
